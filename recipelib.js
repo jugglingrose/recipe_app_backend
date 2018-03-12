@@ -1,18 +1,19 @@
 const uuidv4 = require('uuid/v4');
 
 var obj = {};
-var recipes = [];
+var recipes = {};
 
-
-/*placeholder recipe until we get our database
-recipes.push({
+/*placeholder recipe until we get our database*/
+var tempuuid = uuidv4();
+var temprecipe = {
   title: "cinammon roll",
   time:  "20",
   description: "yummy cinammon rolls",
   ingredient:  ["dough", "cinammon", "icing"],
   instruction: ["preheat oven", "bake", "add icing"],
-  id: uuidv4
-})*/
+  id: tempuuid
+}
+recipes[tempuuid] = temprecipe;
 
 obj.create = function(title, time, desc, ingredient, instruction){
   var recipe = {
@@ -23,10 +24,52 @@ obj.create = function(title, time, desc, ingredient, instruction){
     instruction: instruction,
     id: uuidv4()
   }
-  recipes.push(recipe);
+  recipes[recipe.id] = recipe;
   return recipe;
+}
+
+obj.update = function(id, title, time, desc, ingredient, instruction){
+  console.log("I'm in update!");
+  var recipe = {
+    title: title,
+    time: time,
+    desc: desc,
+    ingredient: ingredient,
+    instruction: instruction,
+    id: id
+  }
+  recipes[recipe.id] = recipe;
+  return recipe;
+}
+  /*recipes[id] = {
+    title: title,
+    time: time,
+    desc: desc,
+    ingredient: ingredient,
+    instruction: instruction,
+    id: id
+  }
+  recipes[id] = recipes[id];
+  return recipe;
+}*/
+
+obj.delete = function(id){
+  console.log("I'm in delete!", id);
+  delete recipes[id];
 
 }
 
+obj.getOne = function(id){
+  console.log("I'm in get one recipe");
+  return recipes[id];
+}
+
+obj.getAll = function(){
+  console.log("I'm in get! Happy Dance!");
+  if(recipes.length === 0){
+    return undefined;
+  }
+  return recipes;
+}
 
 module.exports = obj;
