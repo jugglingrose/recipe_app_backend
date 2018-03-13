@@ -3,6 +3,12 @@ const uuidv4 = require('uuid/v4');
 var obj = {};
 var recipes = {};
 
+var mongo = require('mongodb');
+
+var config = require('./config.secret');
+const expressMongoDB = require('express-mongo-db');
+app.use(expressMongoDb(config.mongo_uri));
+
 /*placeholder recipe until we get our database*/
 var tempuuid = uuidv4();
 var temprecipe = {
