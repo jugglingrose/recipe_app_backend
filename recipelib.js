@@ -9,6 +9,7 @@ var MongoClient = mongo.MongoClient;
 var config = require('./config.secret');
 var db;
 
+
 obj.initialize = function(callback) {
   ///connect to mongodb
   MongoClient.connect(config.mongo_uri, function(err, database) {
@@ -43,7 +44,8 @@ obj.create = function(title, time, desc, ingredient, instruction){
     id: uuidv4()
   }
   recipes[recipe.id] = recipe;
-  db.collection("recipes").insertOne({'recipe': recipe}, function(err, result){
+  const myDatabase = db.db("recipe_app_db");
+  myDatabase.collection("recipes").insertOne({'recipe': recipe}, function(err, result){
     if (err) throw err;
     console.log("1 recipe inserted");
 
