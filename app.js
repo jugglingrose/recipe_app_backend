@@ -43,5 +43,7 @@ app.get('/recipes', function(req,res) {
 });
 
 
-
-app.listen(4000);
+recipelib.initialize(function(){
+  app.listen(4000);
+  console.log("server listening on 4000");
+});

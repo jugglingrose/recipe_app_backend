@@ -4,10 +4,22 @@ var obj = {};
 var recipes = {};
 
 var mongo = require('mongodb');
+var MongoClient = mongo.MongoClient;
 
 var config = require('./config.secret');
-const expressMongoDB = require('express-mongo-db');
-app.use(expressMongoDb(config.mongo_uri));
+var db;
+
+obj.initialize = function(callback) {
+  ///connect to mongodb
+  MongoClient.connect(config.mongo_uri, function(err, database) {
+    if (err) throw err;
+    console.log("succesfully connected to database");
+    db = database;
+    //call a callback
+    callback();
+  });
+}
+
 
 /*placeholder recipe until we get our database*/
 var tempuuid = uuidv4();
@@ -31,6 +43,11 @@ obj.create = function(title, time, desc, ingredient, instruction){
     id: uuidv4()
   }
   recipes[recipe.id] = recipe;
+  db.collection("recipes").insertOne({'recipe': recipe}, function(err, result){
+    if (err) throw err;
+    console.log("1 recipe inserted");
+
+  })
   return recipe;
 }
 
