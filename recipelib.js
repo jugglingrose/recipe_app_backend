@@ -40,7 +40,7 @@ obj.create = function(title, time, desc, ingredient, instruction){
     desc: desc,
     ingredient: ingredient,
     instruction: instruction,
-    _id: uuidv4()
+    /*_id: uuidv4()*/
   }
   recipes[recipe.id] = recipe;
   const myDatabase = db.db("recipe_app_db");
@@ -64,40 +64,46 @@ obj.update = function(id, title, time, desc, ingredient, instruction){
   recipes[recipe.id] = recipe;
   return recipe;
 }
-  /*recipes[id] = {
-    title: title,
-    time: time,
-    desc: desc,
-    ingredient: ingredient,
-    instruction: instruction,
-    id: id
-  }
-  recipes[id] = recipes[id];
-  return recipe;
-}*/
 
 obj.delete = function(id){
   console.log("I'm in delete!", id);
   delete recipes[id];
   const myDatabase = db.db("recipe_app_db");
-  myDatabase.collection("recipes").deleteOne({'_id': ObjectId(id)}, function(err, result){
+  var o_id = new mongo.ObjectID(id);
+  myDatabase.collection("recipes").deleteOne({'_id': o_id}, function(err, result){
     if (err) throw err;
     console.log("1 item deleted");
-
   });
 }
 
 obj.getOne = function(id){
+  var recipe = "";
   console.log("I'm in get one recipe");
-  return recipes[id];
+  const myDatabase = db.db("recipe_app_db");
+  var o_id = new mongo.ObjectId(id);
+  myDatabase.collection("recipes").findOne({'_id': o_id}, function(err, result){
+    if (err) throw err;
+    recipe = result;
+    console.log("recipe found:", recipe);
+    /*not returning recipe*/
+  });
+  return recipe;
 }
 
 obj.getAll = function(){
   console.log("I'm in get! Happy Dance!");
-  if(recipes.length === 0){
-    return undefined;
-  }
-  return recipes;
+  const myDatabase = db.db("recipe_app_db");
+  myDatabase.collection("recipes").find({}).toArray(function(err, result){
+    if (err) throw err;
+    var recipes = result;
+    if (recipes.length === 0){
+      return undefined;
+    }
+    console.log("items found in database", recipes);
+    return recipes;
+    /*not returning recipes*/
+  });
+
 }
 
 module.exports = obj;
