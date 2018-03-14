@@ -21,7 +21,6 @@ obj.initialize = function(callback) {
   });
 }
 
-
 /*placeholder recipe until we get our database*/
 var tempuuid = uuidv4();
 var temprecipe = {
@@ -41,14 +40,13 @@ obj.create = function(title, time, desc, ingredient, instruction){
     desc: desc,
     ingredient: ingredient,
     instruction: instruction,
-    id: uuidv4()
+    _id: uuidv4()
   }
   recipes[recipe.id] = recipe;
   const myDatabase = db.db("recipe_app_db");
   myDatabase.collection("recipes").insertOne({'recipe': recipe}, function(err, result){
     if (err) throw err;
     console.log("1 recipe inserted");
-
   })
   return recipe;
 }
@@ -81,7 +79,12 @@ obj.update = function(id, title, time, desc, ingredient, instruction){
 obj.delete = function(id){
   console.log("I'm in delete!", id);
   delete recipes[id];
+  const myDatabase = db.db("recipe_app_db");
+  myDatabase.collection("recipes").deleteOne({'_id': ObjectId(id)}, function(err, result){
+    if (err) throw err;
+    console.log("1 item deleted");
 
+  });
 }
 
 obj.getOne = function(id){
