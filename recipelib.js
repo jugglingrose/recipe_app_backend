@@ -86,8 +86,8 @@ obj.getOne = function(id){
     recipe = result;
     console.log("recipe found:", recipe);
     /*not returning recipe*/
+      return recipe;
   });
-  return recipe;
 }
 
 obj.getAll = function(){
