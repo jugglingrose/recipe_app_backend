@@ -21,7 +21,7 @@ obj.initialize = function(callback) {
   });
 }
 
-/*placeholder recipe until we get our database*/
+/*placeholder recipe until we get our database
 var tempuuid = uuidv4();
 var temprecipe = {
   title: "cinammon roll",
@@ -32,8 +32,9 @@ var temprecipe = {
   id: tempuuid
 }
 recipes[tempuuid] = temprecipe;
+*/
 
-obj.create = function(title, time, desc, ingredient, instruction){
+obj.create = function(title, time, desc, ingredient, instruction, callback){
   var recipe = {
     title: title,
     time: time,
@@ -42,13 +43,13 @@ obj.create = function(title, time, desc, ingredient, instruction){
     instruction: instruction,
     /*_id: uuidv4()*/
   }
-  recipes[recipe.id] = recipe;
+  //recipes[recipe.id] = recipe;
   const myDatabase = db.db("recipe_app_db");
-  myDatabase.collection("recipes").insertOne({'recipe': recipe}, function(err, result){
+  myDatabase.collection("recipes").insertOne(recipe, function(err, result){
     if (err) throw err;
-    console.log("1 recipe inserted");
+    console.log("1 recipe inserted", recipe);
+    callback(recipe);
   })
-  return recipe;
 }
 
 obj.update = function(id, title, time, desc, ingredient, instruction, callback){
@@ -62,17 +63,19 @@ obj.update = function(id, title, time, desc, ingredient, instruction, callback){
   }
   var o_id = new mongo.ObjectId(id);
   var myDatabase = db.db("recipe_app_db");
-  myDatabase.collection("recipes").update({'_id': o_id}, function(err, result){
+  myDatabase.collection("recipes").update({'_id': o_id},
+    { $set: recipe }, function(err, result){
     if (err) throw err;
     console.log("1 item updated");
+    callback(recipe);
   });
-  callback(recipe);
+  console.log("one item has been updated");
   /*
   recipes[recipe.id] = recipe;
   return recipe;*/
 }
 
-obj.delete = function(id){
+obj.delete = function(id, callback){
   console.log("I'm in delete!", id);
   delete recipes[id];
   const myDatabase = db.db("recipe_app_db");
@@ -80,6 +83,7 @@ obj.delete = function(id){
   myDatabase.collection("recipes").deleteOne({'_id': o_id}, function(err, result){
     if (err) throw err;
     console.log("1 item deleted");
+    callback();
   });
 }
 

@@ -12,8 +12,10 @@ app.use(cors());
 
 app.put('/recipe', function(req,res) {
   console.log("recipe put called", req.body);
-  var recipe = recipelib.create(req.body.title, req.body.time, req.body.desc, req.body.ingredient, req.body.instruction);
-  res.json(recipe);
+  var recipe = recipelib.create(req.body.title, req.body.time, req.body.desc, req.body.ingredient, req.body.instruction,
+    function(recipe) {
+      res.json(recipe);
+    });
 });
 
 app.post('/recipe/:id', function(req,res) {
@@ -31,11 +33,6 @@ app.get('/recipe/:id', function(req,res){
   });
 });
 
-app.delete('/recipe/:id', function(req,res){
-  console.log("delete recipe called");
-  recipelib.delete(req.params.id);
-  res.end();
-});
 
 app.get('/recipes', function(req,res) {
   console.log("get recipe called");
@@ -44,6 +41,13 @@ app.get('/recipes', function(req,res) {
   });
 });
 
+
+app.delete('/recipe/:id', function(req,res){
+  console.log("delete recipe called");
+  recipelib.delete(req.params.id, function(){
+      res.end();
+  });
+});
 
 recipelib.initialize(function(){
   app.listen(4000);
