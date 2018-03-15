@@ -19,15 +19,16 @@ app.put('/recipe', function(req,res) {
 app.post('/recipe/:id', function(req,res) {
   console.log("recipe update has been called");
   var recipe = recipelib.update(req.params.id, req.body.title, req.body.time,req.body.desc, req.body.ingredient,
-    req.body.instruction);
-  res.json(recipe);
-
+    req.body.instruction, function(recipe){
+        res.json(recipe);
+    });
 });
 
 app.get('/recipe/:id', function(req,res){
   console.log("get one recipe called");
-  var recipe = recipelib.getOne(req.params.id);
-  res.json(recipe);
+  var recipe = recipelib.getOne(req.params.id, function(recipe){
+      res.json(recipe);
+  });
 });
 
 app.delete('/recipe/:id', function(req,res){
@@ -38,8 +39,9 @@ app.delete('/recipe/:id', function(req,res){
 
 app.get('/recipes', function(req,res) {
   console.log("get recipe called");
-  var recipes = recipelib.getAll();
-  res.json(recipes);
+  var recipes = recipelib.getAll(function(recipes){
+      res.json(recipes);
+  });
 });
 
 
