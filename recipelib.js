@@ -6,19 +6,9 @@ var recipes = {};
 var mongo = require('mongodb');
 var MongoClient = mongo.MongoClient;
 
-var config = require('./config.secret');
-var db;
-
 
 obj.initialize = function(callback) {
-  ///connect to mongodb
-  MongoClient.connect(config.mongo_uri, function(err, database) {
-    if (err) throw err;
-    console.log("succesfully connected to database");
-    db = database;
-    //call a callback
     callback();
-  });
 }
 
 /*placeholder recipe until we get our database
@@ -34,7 +24,7 @@ var temprecipe = {
 recipes[tempuuid] = temprecipe;
 */
 
-obj.create = function(title, time, desc, ingredient, instruction, callback){
+obj.create = function(db, title, time, desc, ingredient, instruction, callback){
   var recipe = {
     title: title,
     time: time,
@@ -44,15 +34,14 @@ obj.create = function(title, time, desc, ingredient, instruction, callback){
     /*_id: uuidv4()*/
   }
   //recipes[recipe.id] = recipe;
-  const myDatabase = db.db("recipe_app_db");
-  myDatabase.collection("recipes").insertOne(recipe, function(err, result){
+  db.collection("recipes").insertOne(recipe, function(err, result){
     if (err) throw err;
     console.log("1 recipe inserted", recipe);
     callback(recipe);
   })
 }
 
-obj.update = function(id, title, time, desc, ingredient, instruction, callback){
+obj.update = function(db, id, title, time, desc, ingredient, instruction, callback){
   console.log("I'm in update!");
   var recipe = {
     title: title,
@@ -62,8 +51,8 @@ obj.update = function(id, title, time, desc, ingredient, instruction, callback){
     instruction: instruction,
   }
   var o_id = new mongo.ObjectId(id);
-  var myDatabase = db.db("recipe_app_db");
-  myDatabase.collection("recipes").update({'_id': o_id},
+
+  db.collection("recipes").update({'_id': o_id},
     { $set: recipe }, function(err, result){
     if (err) throw err;
     console.log("1 item updated");
@@ -75,24 +64,22 @@ obj.update = function(id, title, time, desc, ingredient, instruction, callback){
   return recipe;*/
 }
 
-obj.delete = function(id, callback){
+obj.delete = function(db, id, callback){
   console.log("I'm in delete!", id);
   delete recipes[id];
-  const myDatabase = db.db("recipe_app_db");
   var o_id = new mongo.ObjectID(id);
-  myDatabase.collection("recipes").deleteOne({'_id': o_id}, function(err, result){
+  db.collection("recipes").deleteOne({'_id': o_id}, function(err, result){
     if (err) throw err;
     console.log("1 item deleted");
     callback();
   });
 }
 
-obj.getOne = function(id, callback){
+obj.getOne = function(db, id, callback){
   var recipe = "";
   console.log("I'm in get one recipe");
-  const myDatabase = db.db("recipe_app_db");
   var o_id = new mongo.ObjectId(id);
-  myDatabase.collection("recipes").findOne({'_id': o_id}, function(err, result){
+  db.collection("recipes").findOne({'_id': o_id}, function(err, result){
     if (err) throw err;
     recipe = result;
     console.log("recipe found:", recipe);
@@ -100,10 +87,9 @@ obj.getOne = function(id, callback){
   });
 }
 
-obj.getAll = function(callback){
+obj.getAll = function(db, callback){
   console.log("I'm in get! Happy Dance!");
-  const myDatabase = db.db("recipe_app_db");
-  myDatabase.collection("recipes").find({}).toArray(function(err, result){
+  db.collection("recipes").find({}).toArray(function(err, result){
     if (err) throw err;
     var recipes = result;
     if (recipes.length === 0){
