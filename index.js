@@ -1,3 +1,4 @@
+var functions = require('firebase-functions');
 var express = require('express');
 var app = express();
 
@@ -56,3 +57,9 @@ recipelib.initialize(function(){
   app.listen(4000);
   console.log("server listening on 4000");
 });
+
+const api_v1 = functions.https.onRequest(app);
+
+module.exports = {
+  api_v1
+}
