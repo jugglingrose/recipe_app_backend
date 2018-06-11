@@ -5,7 +5,6 @@ var app = express();
 var cors = require('cors');
 
 var bodyparser = require('body-parser');
-var recipelib = require('./recipelib');
 var expressMongo = require('express-mongo-db');
 
 var mongo = require('mongodb');
@@ -16,7 +15,17 @@ app.use(bodyparser.json());
 app.use(cors());
 app.use(expressMongo(config.mongo_uri));
 
+//Bcrypt for password hashing//
+var bcrypt = require('bcrypt');
+const saltRounds = 10;
 
+//Cookie Parser//
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
+app.use(cookieParser(config.cookie_secret));
+
+/* -- Recipes -- */
+//put is for creating something new. Insert a new recipe to DB//
 app.put('/recipe', function(req,res) {
   console.log("recipe put called", req.body);
   var recipe = {
@@ -29,9 +38,11 @@ app.put('/recipe', function(req,res) {
   req.db.collection("recipes").insertOne(recipe, function(err, result){
     if (err) throw err;
     console.log("1 recipe inserted", recipe);
+    res.json(recipe);
   })
 })
 
+//Update a Recipe
 app.post('/recipe/:id', function(req,res) {
   console.log("recipe update has been called");
   var recipe = {
@@ -47,9 +58,11 @@ app.post('/recipe/:id', function(req,res) {
     { $set: recipe }, function(err, result){
     if (err) throw err;
     console.log("1 item updated");
+    res.json(recipe);
   });
 })
 
+//Get the details of a recipe
 app.get('/recipe/:id', function(req,res){
   console.log("get one recipe called");
 
@@ -62,6 +75,7 @@ app.get('/recipe/:id', function(req,res){
   });
 })
 
+//Get all of the recipes
 app.get('/recipes', function(req,res) {
   console.log("get all recipes called");
   req.db.collection("recipes").find({}).toArray(function(err, result){
@@ -75,6 +89,7 @@ app.get('/recipes', function(req,res) {
   });
 })
 
+//Delete A recipe
 app.delete('/recipe/:id', function(req,res){
   console.log("delete recipe called");
   var o_id = new mongo.ObjectID(req.params.id);
@@ -84,6 +99,59 @@ app.delete('/recipe/:id', function(req,res){
     res.end();
   });
 })
+
+/*----- Log In/Sign Up ------*/
+
+//add new user to database//
+app.put('/signup', function(req,res) {
+  console.log("sign up called");
+  var name = req.body.name;
+  var username = req.body.username;
+  var password = req.body.password;
+  console.log(name + " " + username + " " + password);
+  bcrypt.hash(password, saltRounds, function(err, hash) {
+    req.db.collection("authenticate").insertOne({"name": name, "username": username,
+    "password": hash}, function(err, result){
+      if (err) throw err;
+      console.log("new user has been added to database");
+    })
+  })
+})
+
+//find user, login//
+app.post('/login', function(req,res){
+  console.log("I am in login");
+  var username = req.body.username;
+  var password = req.body.password;
+  req.db.collection("authenticate").findOne({"username": username}, function(err, user) {
+    if(!user){
+      console.log("user not found");
+    }
+    else{
+      console.log(user);
+      bcrypt.compare(password, user.password, function(err, result) {
+        if(result){
+          console.log("username and password match");
+          //create a signed cookie//
+          res.cookie('userid', user._id, {signed: true});
+          console.log(cookie);
+        }
+        else{
+          console.log("username and password do not match");
+        }
+      })
+    }
+  })
+})
+
+//log out, cookies cleared//
+app.get('logout', function(req,res){
+  res.clearCookie('userid');
+  console.log("logged out");
+})
+
+
+
 
 app.listen(4000);
 
