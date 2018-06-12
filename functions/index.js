@@ -21,7 +21,6 @@ const saltRounds = 10;
 
 //Cookie Parser//
 var cookieParser = require('cookie-parser');
-app.use(cookieParser());
 app.use(cookieParser(config.cookie_secret));
 
 /* -- Recipes -- */
@@ -39,6 +38,7 @@ app.put('/recipe', function(req,res) {
     if (err) throw err;
     console.log("1 recipe inserted", recipe);
     res.json(recipe);
+    res.end();
   })
 })
 
@@ -110,7 +110,7 @@ app.put('/signup', function(req,res) {
   var password = req.body.password;
   console.log(name + " " + username + " " + password);
   bcrypt.hash(password, saltRounds, function(err, hash) {
-    req.db.collection("authenticate").insertOne({"name": name, "username": username,
+    req.db.collection("authenticate").insertOne({"_id": username, "name": name,
     "password": hash}, function(err, result){
       if (err) throw err;
       console.log("new user has been added to database");
@@ -123,9 +123,11 @@ app.post('/login', function(req,res){
   console.log("I am in login");
   var username = req.body.username;
   var password = req.body.password;
-  req.db.collection("authenticate").findOne({"username": username}, function(err, user) {
+  req.db.collection("authenticate").findOne({"_id": username}, function(err, user) {
     if(!user){
       console.log("user not found");
+      res.status(401);
+      res.send("username not found");
     }
     else{
       console.log(user);
@@ -134,20 +136,38 @@ app.post('/login', function(req,res){
           console.log("username and password match");
           //create a signed cookie//
           res.cookie('userid', user._id, {signed: true});
-          console.log(cookie);
+          res.end();
+
         }
         else{
           console.log("username and password do not match");
+          res.status(401);
+          res.send("username and password do not match");
         }
       })
     }
   })
 })
 
+app.get('/login', function(req,res){
+  console.log(" I am in get login");
+  var username = req.signedCookies.userid
+  if(username === undefined){
+    res.status(401);
+    res.send("cookie not set");
+    console.log("cookie not sent");
+  }else{
+    console.log(username + " is logged in");
+    res.send(username + " is logged in");
+  }
+
+})
+
 //log out, cookies cleared//
-app.get('logout', function(req,res){
+app.get('/logout', function(req,res){
   res.clearCookie('userid');
   console.log("logged out");
+  res.end();
 })
 
 
