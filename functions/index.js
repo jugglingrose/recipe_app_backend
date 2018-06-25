@@ -12,7 +12,7 @@ var MongoClient = mongo.MongoClient;
 
 var config = require('./config.secret');
 app.use(bodyparser.json());
-app.use(cors());
+app.use(cors({origin:"http://localhost:3000", credentials: true}));
 app.use(expressMongo(config.mongo_uri));
 
 //Bcrypt for password hashing//
@@ -38,7 +38,7 @@ app.put('/recipe', function(req,res) {
     if (err) throw err;
     console.log("1 recipe inserted", recipe);
     res.json(recipe);
-    res.end();
+
   })
 })
 
@@ -108,7 +108,7 @@ app.put('/signup', function(req,res) {
   var name = req.body.name;
   var username = req.body.username;
   var password = req.body.password;
-  console.log(name + " " + username + " " + password);
+  console.log( username + " " + password);
   bcrypt.hash(password, saltRounds, function(err, hash) {
     req.db.collection("authenticate").insertOne({"_id": username, "name": name,
     "password": hash}, function(err, result){
@@ -124,6 +124,7 @@ app.post('/login', function(req,res){
   var username = req.body.username;
   var password = req.body.password;
   req.db.collection("authenticate").findOne({"_id": username}, function(err, user) {
+    if (err) throw err;
     if(!user){
       console.log("user not found");
       res.status(401);
@@ -136,8 +137,8 @@ app.post('/login', function(req,res){
           console.log("username and password match");
           //create a signed cookie//
           res.cookie('userid', user._id, {signed: true});
-          res.end();
-
+          /*res.json({authed: true});*/
+          res.json(true);
         }
         else{
           console.log("username and password do not match");
@@ -153,12 +154,13 @@ app.get('/login', function(req,res){
   console.log(" I am in get login");
   var username = req.signedCookies.userid
   if(username === undefined){
+    /*res.json({authed: false});*/
     res.status(401);
-    res.send("cookie not set");
-    console.log("cookie not sent");
+    res.json(false);
   }else{
     console.log(username + " is logged in");
-    res.send(username + " is logged in");
+    /*res.json({authed: true});*/
+    res.json(true);
   }
 
 })
@@ -169,8 +171,6 @@ app.get('/logout', function(req,res){
   console.log("logged out");
   res.end();
 })
-
-
 
 
 app.listen(4000);
