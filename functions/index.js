@@ -169,9 +169,8 @@ app.get('/login', function(req,res){
 app.get('/logout', function(req,res){
   res.clearCookie('userid');
   console.log("logged out");
-  res.end();
+  res.json(false);
 })
-
 
 app.listen(4000);
 
