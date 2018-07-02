@@ -35,7 +35,7 @@ app.put('/recipe', function(req,res) {
     instruction: req.body.instruction,
     UserId: req.signedCookies.userid
   }
-  
+
   req.db.collection("recipes").insertOne(recipe, function(err, result){
     if (err) throw err;
     console.log("1 recipe inserted", recipe);
@@ -80,7 +80,8 @@ app.get('/recipe/:id', function(req,res){
 //Get all of the recipes
 app.get('/recipes', function(req,res) {
   console.log("get all recipes called");
-  req.db.collection("recipes").find({}).toArray(function(err, result){
+  /*show only recipes belonging to the currently logged in user*/
+  req.db.collection("recipes").find({UserId: req.signedCookies.userid }).toArray(function(err, result){
     if (err) throw err;
     var recipes = result;
     if (recipes.length === 0){
@@ -154,7 +155,7 @@ app.post('/login', function(req,res){
 
 app.get('/login', function(req,res){
   console.log(" I am in get login");
-  var username = req.signedCookies.userid
+  var username = req.signedCookies.userid;
   if(username === undefined){
     /*res.json({authed: false});*/
     res.status(401);
