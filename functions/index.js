@@ -33,7 +33,9 @@ app.put('/recipe', function(req,res) {
     desc: req.body.desc,
     ingredient: req.body.ingredient,
     instruction: req.body.instruction,
+    UserId: req.signedCookies.userid
   }
+  
   req.db.collection("recipes").insertOne(recipe, function(err, result){
     if (err) throw err;
     console.log("1 recipe inserted", recipe);
