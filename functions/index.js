@@ -27,6 +27,13 @@ app.use(cookieParser(config.cookie_secret));
 //put is for creating something new. Insert a new recipe to DB//
 app.put('/recipe', function(req,res) {
   console.log("recipe put called", req.body);
+  if(req.signedCookies.userid === undefined){
+    console.log("user not logged in");
+    res.status(401);
+    res.end();
+    return;
+  }
+
   var recipe = {
     title: req.body.title,
     time: req.body.time,
@@ -47,6 +54,14 @@ app.put('/recipe', function(req,res) {
 //Update a Recipe
 app.post('/recipe/:id', function(req,res) {
   console.log("recipe update has been called");
+
+  if(req.signedCookies.userid === undefined){
+    console.log("user not logged in");
+    res.status(401);
+    res.end();
+    return;
+  }
+
   var recipe = {
     title: req.body.title,
     time: req.body.time,
@@ -56,7 +71,7 @@ app.post('/recipe/:id', function(req,res) {
   }
   var o_id = new mongo.ObjectId(req.params.id);
 
-  req.db.collection("recipes").update({'_id': o_id},
+  req.db.collection("recipes").update({'_id': o_id, UserId: req.signedCookies.userid},
     { $set: recipe }, function(err, result){
     if (err) throw err;
     console.log("1 item updated");
@@ -81,7 +96,7 @@ app.get('/recipe/:id', function(req,res){
 app.get('/recipes', function(req,res) {
   console.log("get all recipes called");
   /*show only recipes belonging to the currently logged in user*/
-  req.db.collection("recipes").find({UserId: req.signedCookies.userid }).toArray(function(err, result){
+  req.db.collection("recipes").find({}).toArray(function(err, result){
     if (err) throw err;
     var recipes = result;
     if (recipes.length === 0){
@@ -95,8 +110,15 @@ app.get('/recipes', function(req,res) {
 //Delete A recipe
 app.delete('/recipe/:id', function(req,res){
   console.log("delete recipe called");
+  if(req.signedCookies.userid === undefined){
+    console.log("user not logged in");
+    res.status(401);
+    res.end();
+    return;
+  }
+
   var o_id = new mongo.ObjectID(req.params.id);
-  req.db.collection("recipes").deleteOne({'_id': o_id}, function(err, result){
+  req.db.collection("recipes").deleteOne({'_id': o_id, UserId: req.signedCookies.userid}, function(err, result){
     if (err) throw err;
     console.log("1 item deleted");
     res.end();
