@@ -153,7 +153,8 @@ app.post('/login', function(req,res){
     if(!user){
       console.log("user not found");
       res.status(401);
-      res.send("username not found");
+      res.end();
+      return;
     }
     else{
       console.log(user);
